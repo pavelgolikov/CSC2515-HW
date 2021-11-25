@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import metrics
@@ -7,6 +9,7 @@ from sklearn.utils.multiclass import unique_labels
 
 
 def summarize_and_save_model_report(preds, labels, name):
+    os.makedirs("results", exist_ok=True)
     summary = metrics.classification_report(labels, preds, output_dict=True)
     confusion_matrix = metrics.confusion_matrix(labels, preds)
     summary.update({
