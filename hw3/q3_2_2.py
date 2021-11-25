@@ -30,7 +30,7 @@ def grid_search_fit_and_test(train_data, train_labels, test_data, test_labels, n
     
     # print report
     print(
-        f"Classification report for classifier {clf}:\n"
+        f"Classification report for classifier with grid search {clf}:\n"
         f"{metrics.classification_report(test_labels, pred)}\n"
     )
 
@@ -54,6 +54,7 @@ def fit_and_test(train_data, train_labels, test_data, test_labels):
 
 if __name__ == "__main__":
     train_data, train_labels, test_data, test_labels = q3_0.data.load_all_data_from_zip("a3digits.zip", "data")
+    # grid_search_fit_and_test(train_data, train_labels, test_data, test_labels, 1)
     fit_and_test(train_data, train_labels, test_data, test_labels)
 
 
