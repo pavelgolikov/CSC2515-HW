@@ -1,9 +1,11 @@
+from sklearn.preprocessing import label_binarize
+
 import q3_0
 import numpy as np
 from sklearn import svm, metrics
 from sklearn.model_selection import GridSearchCV
 
-from q3_3 import summarize_and_save_model_report
+from q3_3 import summarize_and_save_model_report, visualize_roc_curve
 
 
 def grid_search_fit_and_test(train_data, train_labels, test_data, test_labels, number_cores):
@@ -39,7 +41,7 @@ def grid_search_fit_and_test(train_data, train_labels, test_data, test_labels, n
 
 def fit_and_test(train_data, train_labels, test_data, test_labels):
     # declare classifier and parameters - this already uses the best parameters found with grid search
-    clf = svm.SVC(kernel="rbf", gamma=0.1856635533445111, C=4.0)
+    clf = svm.SVC(kernel="rbf", gamma=0.1856635533445111, C=4.0, probability=True)
     
     # fit classifier
     clf.fit(train_data, train_labels)
@@ -49,6 +51,9 @@ def fit_and_test(train_data, train_labels, test_data, test_labels):
 
     # summarize model
     summarize_and_save_model_report(pred, test_labels, name="svm")
+    probs = clf.predict_proba(test_data)
+    binarized_labels = label_binarize(test_labels, classes=range(10))
+    visualize_roc_curve(probs, binarized_labels, name="svm")
 
     # print report
     print(

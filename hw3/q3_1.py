@@ -4,6 +4,8 @@ Question 3.1 Skeleton Code
 Here you should implement and evaluate the k-NN classifier.
 '''
 from sklearn.model_selection import KFold
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import label_binarize
 from tqdm import tqdm
 
 import data
@@ -12,7 +14,7 @@ from collections import Counter, defaultdict
 # Import pyplot - plt.imshow is useful!
 import matplotlib.pyplot as plt
 
-from q3_3 import summarize_and_save_model_report
+from q3_3 import summarize_and_save_model_report, visualize_roc_curve
 
 
 class KNearestNeighbor(object):
@@ -142,6 +144,13 @@ def main():
 
     # save model summary for comparison
     summarize_and_save_model_report(np.array(test_preds), np.array(test_labels), "knn")
+
+    # using sklearn-knn ONLY for computing ROC curve!
+    clf = KNeighborsClassifier(n_neighbors=best_k).fit(train_data, train_labels)
+    probs = clf.predict_proba(test_data)
+    binarized_labels = label_binarize(test_labels, classes=range(10))
+    visualize_roc_curve(probs, binarized_labels, name="knn")
+
 
 if __name__ == '__main__':
     main()

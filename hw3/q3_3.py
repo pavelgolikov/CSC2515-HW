@@ -6,6 +6,7 @@ from sklearn import metrics
 import yaml
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.utils.multiclass import unique_labels
+from sklearn.metrics import roc_curve, auc
 
 
 def summarize_and_save_model_report(preds, labels, name):
@@ -62,6 +63,38 @@ def visualize_per_model_acc(models, summaries):
     plt.savefig(f"results/accuracy.png")
     plt.show()
     print(f"Dumped Accuracy plot at results/accuracy.png")
+
+
+def visualize_roc_curve(y_score, y_test, name):
+    n_classes = y_score.shape[-1]
+    # Compute ROC curve and ROC area for each class
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    for i in range(n_classes):
+        fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+
+    # Compute micro-average ROC curve and ROC area
+    fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
+    roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+
+    # Plot
+    plt.plot(fpr["micro"], tpr["micro"],
+             label='micro-average ROC curve (area = {0:0.5f})'.format(roc_auc["micro"]))
+    for i in range(n_classes):
+        plt.plot(fpr[i], tpr[i], label='ROC curve of class {0} (area = {1:0.5f})'
+                                       ''.format(i, roc_auc[i]))
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title(f'Multi-class ROC for {name.upper()}')
+    plt.legend(loc="lower right")
+    plt.savefig(f"results/{name}-roc.png")
+    plt.show()
+    print(f"Dumped ROC for {name} at results/{name}-roc.png")
 
 
 if __name__ == "__main__":

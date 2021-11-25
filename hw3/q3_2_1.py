@@ -3,8 +3,10 @@ import torch
 import torch.nn as nn
 import pandas as pd
 import torch.nn.functional as func
+from sklearn.preprocessing import label_binarize
+
 import q3_0
-from q3_3 import summarize_and_save_model_report
+from q3_3 import summarize_and_save_model_report, visualize_roc_curve
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -68,6 +70,7 @@ def test(test_data, test_labels, model):
     test_loss = 0
     correct_predictions = 0
     test_preds = []
+    test_probs = []
 
     with torch.no_grad():
         # for each test example
@@ -79,8 +82,10 @@ def test(test_data, test_labels, model):
             # compare the predicted value and test label
             if torch.argmax(y_pred.data).item() == torch.argmax(test_labels[i]).item():
                 correct_predictions += 1
+
             # store prediction
             test_preds.append(torch.argmax(y_pred.data).item())
+            test_probs.append(y_pred.data.numpy())
 
     #compute avg test loss and  
     test_loss = test_loss /  len(test_data)
@@ -91,6 +96,9 @@ def test(test_data, test_labels, model):
     # save model summary for comparison
     test_labels = torch.argmax(test_labels, axis=-1).numpy().astype(np.float)
     summarize_and_save_model_report(np.array(test_preds, dtype=np.float), test_labels, "mlp")
+    test_probs = np.stack(test_probs)
+    binarized_labels = label_binarize(test_labels, classes=range(10))
+    visualize_roc_curve(test_probs, binarized_labels, name="mlp")
 
 
 if __name__ == "__main__":

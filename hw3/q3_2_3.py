@@ -1,9 +1,11 @@
+from sklearn.preprocessing import label_binarize
+
 import q3_0
 import numpy as np
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from q3_3 import summarize_and_save_model_report
+from q3_3 import summarize_and_save_model_report, visualize_roc_curve
 
 
 def fit_dec_tree(train_data, train_labels, test_data, test_labels, max_d):
@@ -28,6 +30,9 @@ def fit_adaboosted_dec_tree(train_data, train_labels, test_data, test_labels, ma
     # summarize model
     pred = clf.predict(test_data)
     summarize_and_save_model_report(pred, test_labels, name="adaboost_tree")
+    probs = clf.predict_proba(test_data)
+    binarized_labels = label_binarize(test_labels, classes=range(10))
+    visualize_roc_curve(probs, binarized_labels, name="adaboost_tree")
 
     # an example of how to access and predict individual samples (if you need it)
     # reshaped_sample = np.array(test_data[2]).reshape(1, len(test_data[0]))
