@@ -3,9 +3,12 @@ Question 3.1 Skeleton Code
 
 Here you should implement and evaluate the k-NN classifier.
 '''
+from sklearn.model_selection import KFold
+from tqdm import tqdm
 
 import data
 import numpy as np
+from collections import Counter, defaultdict
 # Import pyplot - plt.imshow is useful!
 import matplotlib.pyplot as plt
 
@@ -43,8 +46,31 @@ class KNearestNeighbor(object):
 
         You should return the digit label provided by the algorithm
         '''
-        digit = None
+        # calculate distances from each train sample
+        distances = self.l2_distance(test_point)
+        # build tuple of distances and labels
+        dist_label_tuples = list(zip(distances, self.train_labels))
+        # sort the tuples based on lowest to highest distances
+        dist_label_tuples = sorted(dist_label_tuples, key=lambda x: x[0])
+        # take top-k samples
+        closest_k_points = dist_label_tuples[:k]
+        # categorize then in a dictionary based on  their class and distance
+        class_distance_dict = defaultdict(list)
+        for dist, label in closest_k_points:
+            class_distance_dict[label].append(dist)
+        # find classes with maximum frequency
+        max_freq = max([len(class_distance_dict[_class]) for _class in class_distance_dict])
+        max_freq_classes = [_class for _class in class_distance_dict if len(class_distance_dict[_class]) == max_freq]
+        # tie-breaking
+        if len(max_freq_classes) > 1:
+            # find minimum distance from maximum frequency classes
+            max_freq_min_dist = [(_class, min(class_distance_dict[_class])) for _class in max_freq_classes]
+            # sort by minimum distances and pick first class
+            digit = sorted(max_freq_min_dist, key=lambda x: x[1])[0][0]
+        else:
+            digit = max_freq_classes[0]
         return digit
+
 
 def cross_validation(train_data, train_labels, k_range=np.arange(1,16)):
     '''
@@ -54,25 +80,72 @@ def cross_validation(train_data, train_labels, k_range=np.arange(1,16)):
     The intention was for students to take the training data from the knn object - this should be clearer
     from the new function signature.
     '''
+
+    import pdb
+    pdb.set_trace()
+
+    # perform cross-validation over various k values and return best
+    mean_accs_k = []
     for k in k_range:
-        # Loop over folds
-        # Evaluate k-NN
-        # ...
-        pass
+        folds = KFold(n_splits=10, shuffle=True)
+        fold_splits = list(folds.split(train_data, train_labels))
+        fold_accs = []
+        # loop over folds
+        for train_inds, val_inds in fold_splits:
+            fold_train_data, fold_train_labels = train_data[train_inds], train_labels[train_inds]
+            fold_val_data, fold_val_labels = train_data[val_inds], train_labels[val_inds]
+            # fit KNN on train fold
+            fold_knn = KNearestNeighbor(fold_train_data, fold_train_labels)
+            # evaluate on val fold
+            val_acc = classification_accuracy(fold_knn, k, fold_val_data, fold_val_labels)
+            fold_accs.append(val_acc)
+        # append mean accuracy
+        mean_acc = sum(fold_accs) / len(fold_accs)
+        mean_accs_k.append((mean_acc, k))
+    return mean_accs_k
 
 def classification_accuracy(knn, k, eval_data, eval_labels):
     '''
     Evaluate the classification accuracy of knn on the given 'eval_data'
     using the labels
     '''
-    pass
+    try:
+        preds = [knn.query_knn(point, k) for point in tqdm(eval_data)]
+        accs = [1.0 if pred == label else 0 for pred, label in zip(preds, eval_labels)]
+        acc = sum(accs) / len(accs)
+    except:
+        import pdb
+        pdb.set_trace()
+    return acc
 
 def main():
     train_data, train_labels, test_data, test_labels = data.load_all_data('data')
+    # train_data, train_labels, test_data, test_labels = train_data[:10], train_labels[:10], test_data[:10], test_labels[:10]
     knn = KNearestNeighbor(train_data, train_labels)
 
-    # Example usage:
-    predicted_label = knn.query_knn(test_data[0], 1)
+    # part 1
+    k1_train_acc = classification_accuracy(knn, 1, train_data, train_labels)
+    k1_test_acc = classification_accuracy(knn, 1, test_data, test_labels)
+    k15_train_acc = classification_accuracy(knn, 15, train_data, train_labels)
+    k15_test_acc = classification_accuracy(knn, 15, test_data, test_labels)
+    print(f"K=1 KNN Accuracy, Train: {k1_train_acc}; Test:{k1_test_acc}")
+    print(f"K=15 KNN Accuracy, Train: {k15_train_acc}; Test:{k15_test_acc}")
+
+    import pdb
+    pdb.set_trace()
+
+    # part 2 (see in query_knn function)
+
+    # part 3
+    mean_accs_k = cross_validation(train_data, train_labels)
+    for acc, k in mean_accs_k:
+        print(f"10-Fold with K={k} Mean Fold Accuracy={acc}")
+
+    best_k = sorted(mean_accs_k, key=lambda x:x[0], reverse=True)[0][1]
+    best_k_train_acc = classification_accuracy(knn, best_k, train_data, train_labels)
+    best_k_test_acc = classification_accuracy(knn, best_k, test_data, test_labels)
+    print(f"With best K={best_k}, Train Accuracy: {best_k_train_acc}, Test Accuracy: {best_k_test_acc}")
+
 
 if __name__ == '__main__':
     main()
