@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 
+from q3_3 import summarize_and_save_model_report
+
 
 def fit_dec_tree(train_data, train_labels, test_data, test_labels, max_d):
     # decision tree classifier
@@ -22,8 +24,12 @@ def fit_adaboosted_dec_tree(train_data, train_labels, test_data, test_labels, ma
     clf.fit(train_data, train_labels)
     # print the scores for this classifier
     print("Adaboosted Decision Tree Score: ", clf.score(test_data, test_labels))
-    
-    # an example of how to access and predict individual samples (if you need it)    
+
+    # summarize model
+    pred = clf.predict(test_data)
+    summarize_and_save_model_report(pred, test_labels, name="adaboost_tree")
+
+    # an example of how to access and predict individual samples (if you need it)
     # reshaped_sample = np.array(test_data[2]).reshape(1, len(test_data[0]))
     # print(clf.predict(reshaped_sample))
     # print(test_labels[2])

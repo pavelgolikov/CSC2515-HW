@@ -1,3 +1,4 @@
 .idea/
 *__pycache__*
 hw3/data/
+results/

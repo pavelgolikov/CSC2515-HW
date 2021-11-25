@@ -1,8 +1,10 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import pandas as pd
 import torch.nn.functional as func
 import q3_0
+from q3_3 import summarize_and_save_model_report
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -65,6 +67,8 @@ def test(test_data, test_labels, model):
     model.eval()
     test_loss = 0
     correct_predictions = 0
+    test_preds = []
+
     with torch.no_grad():
         # for each test example
         for i in range(test_data.size()[0]):
@@ -75,12 +79,18 @@ def test(test_data, test_labels, model):
             # compare the predicted value and test label
             if torch.argmax(y_pred.data).item() == torch.argmax(test_labels[i]).item():
                 correct_predictions += 1
-  
+            # store prediction
+            test_preds.append(torch.argmax(y_pred.data).item())
+
     #compute avg test loss and  
     test_loss = test_loss /  len(test_data)
     print('\ntest set loss (avg): {:.5f}, accuracy: {} / {} ({:.0f}%)\n'.format(
         test_loss, correct_predictions, len(test_data),
         100. * correct_predictions / len(test_data)))
+
+    # save model summary for comparison
+    test_labels = torch.argmax(test_labels, axis=-1).numpy().astype(np.float)
+    summarize_and_save_model_report(np.array(test_preds, dtype=np.float), test_labels, "mlp")
 
 
 if __name__ == "__main__":

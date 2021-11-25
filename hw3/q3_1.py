@@ -12,6 +12,9 @@ from collections import Counter, defaultdict
 # Import pyplot - plt.imshow is useful!
 import matplotlib.pyplot as plt
 
+from q3_3 import summarize_and_save_model_report
+
+
 class KNearestNeighbor(object):
     '''
     K Nearest Neighbor classifier
@@ -80,10 +83,6 @@ def cross_validation(train_data, train_labels, k_range=np.arange(1,16)):
     The intention was for students to take the training data from the knn object - this should be clearer
     from the new function signature.
     '''
-
-    import pdb
-    pdb.set_trace()
-
     # perform cross-validation over various k values and return best
     mean_accs_k = []
     for k in k_range:
@@ -104,23 +103,21 @@ def cross_validation(train_data, train_labels, k_range=np.arange(1,16)):
         mean_accs_k.append((mean_acc, k))
     return mean_accs_k
 
-def classification_accuracy(knn, k, eval_data, eval_labels):
+def classification_accuracy(knn, k, eval_data, eval_labels, return_preds=False):
     '''
     Evaluate the classification accuracy of knn on the given 'eval_data'
     using the labels
     '''
-    try:
-        preds = [knn.query_knn(point, k) for point in tqdm(eval_data)]
-        accs = [1.0 if pred == label else 0 for pred, label in zip(preds, eval_labels)]
-        acc = sum(accs) / len(accs)
-    except:
-        import pdb
-        pdb.set_trace()
+    preds = [knn.query_knn(point, k) for point in tqdm(eval_data)]
+    accs = [1.0 if pred == label else 0 for pred, label in zip(preds, eval_labels)]
+    acc = sum(accs) / len(accs)
+    if return_preds:
+        return acc, preds
     return acc
+
 
 def main():
     train_data, train_labels, test_data, test_labels = data.load_all_data('data')
-    # train_data, train_labels, test_data, test_labels = train_data[:10], train_labels[:10], test_data[:10], test_labels[:10]
     knn = KNearestNeighbor(train_data, train_labels)
 
     # part 1
@@ -131,10 +128,7 @@ def main():
     print(f"K=1 KNN Accuracy, Train: {k1_train_acc}; Test:{k1_test_acc}")
     print(f"K=15 KNN Accuracy, Train: {k15_train_acc}; Test:{k15_test_acc}")
 
-    import pdb
-    pdb.set_trace()
-
-    # part 2 (see in query_knn function)
+    # part 2 (see in query_knn function) -- we use the class of closest sample to break ties
 
     # part 3
     mean_accs_k = cross_validation(train_data, train_labels)
@@ -143,9 +137,11 @@ def main():
 
     best_k = sorted(mean_accs_k, key=lambda x:x[0], reverse=True)[0][1]
     best_k_train_acc = classification_accuracy(knn, best_k, train_data, train_labels)
-    best_k_test_acc = classification_accuracy(knn, best_k, test_data, test_labels)
+    best_k_test_acc, test_preds = classification_accuracy(knn, best_k, test_data, test_labels, return_preds=True)
     print(f"With best K={best_k}, Train Accuracy: {best_k_train_acc}, Test Accuracy: {best_k_test_acc}")
 
+    # save model summary for comparison
+    summarize_and_save_model_report(np.array(test_preds), np.array(test_labels), "knn")
 
 if __name__ == '__main__':
     main()

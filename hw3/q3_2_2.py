@@ -3,6 +3,8 @@ import numpy as np
 from sklearn import svm, metrics
 from sklearn.model_selection import GridSearchCV
 
+from q3_3 import summarize_and_save_model_report
+
 
 def grid_search_fit_and_test(train_data, train_labels, test_data, test_labels, number_cores):
     # create a matrix with range for gamma parameter and flatten it
@@ -27,7 +29,7 @@ def grid_search_fit_and_test(train_data, train_labels, test_data, test_labels, n
     
     # predictions
     pred = best_classifier.predict(test_data)
-    
+
     # print report
     print(
         f"Classification report for classifier with grid search {clf}:\n"
@@ -44,7 +46,10 @@ def fit_and_test(train_data, train_labels, test_data, test_labels):
     
     # predict values
     pred = clf.predict(test_data)
-    
+
+    # summarize model
+    summarize_and_save_model_report(pred, test_labels, name="svm")
+
     # print report
     print(
         f"Classification report for classifier {clf}:\n"
