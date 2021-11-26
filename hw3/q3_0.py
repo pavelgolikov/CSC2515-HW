@@ -21,6 +21,7 @@ def plot_means(train_data, train_labels):
     # Plot all means on same axis
     all_concat = np.concatenate(means, 1)
     plt.imshow(all_concat, cmap='gray')
+    plt.savefig("results/mean.png")
     plt.show()
 
 if __name__ == '__main__':

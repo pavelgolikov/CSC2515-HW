@@ -119,6 +119,18 @@ def classification_accuracy(knn, k, eval_data, eval_labels, return_preds=False):
 
 
 def main():
+    """
+    Part-1:
+        K=1 KNN Accuracy, Train: 1.0; Test:0.96875
+        K=15 KNN Accuracy, Train: 0.9637142857142857; Test:0.961
+
+    Part-2:
+        Blah.
+
+    Part-3:
+
+
+    """
     train_data, train_labels, test_data, test_labels = data.load_all_data('data')
     knn = KNearestNeighbor(train_data, train_labels)
 
